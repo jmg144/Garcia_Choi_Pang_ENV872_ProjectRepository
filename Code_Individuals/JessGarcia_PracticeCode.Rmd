@@ -1,0 +1,10 @@
+---
+title: "Jess's Practice Code"
+author: "Jess Garcia"
+date: "4/18/2021"
+output: pdf_document
+---
+## View & Wrangle data
+```{r setup, include=FALSE}
+
+Radiance_data <- read.csv('./Data/ProcessedData_GroupProject_20210418.csv', StringsAsFactors = TRUE)
