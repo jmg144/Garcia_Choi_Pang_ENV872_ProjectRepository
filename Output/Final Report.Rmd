@@ -1,0 +1,74 @@
+---
+title: "Final Project for Environmental Data Analytics"
+author: "Grace Choi, Qiaotong Pang, & Jess Garcia"
+date: "April 26, 2021"
+output: pdf_document
+---
+
+## Rationale & Research Questions
+**Primary Research Question:** Is there a relationship between sea turtle protection policies (light pollution ordinances) in Florida [cities? Counties?] and the amount of radiance those [cities? Counties?] output? 
+
+**Additional Research Questions**
+
+* How does radiance change before these light ordinances go into effect and after? I.e. how does radiance change with time?
+
+* How does average radiance over time vary across cities/counties? 
+
+
+
+**Rationale**
+The state of Florida provided model lighting ordinance for local governments to develop their own light pollution policies largely to control beachfront lighting to protect hatching sea turtles. Policy implementation is important, but the radiance data can show if the policy has affected the amount of radiance in these Florida counties/municipalities. The amount or change in radiance, perhaps as a result of implementing the policy, is what will impact sea turtle protection. 
+
+![](./seaturtle-lightordmap.png)
+
+*Rationale for Data*  
+
+* The GoogleEarth Data Engine Catalog was chosen because it contains The Defense Meteorological Program (DMSP) Operational Line-Scan System (OLS), which has a unique capability to detect visible and near-infrared (VNIR) emission sources at night. And light pollution or radiance at night is what can negatively impact sea turtle hatchlings.
+
+* The radiance data collected covers from 1992 – 2013.
+
+* For the purposes of this data analysis, we chose to only include counties/municipalities that adopted sea turtle protection ordinances between 1994 and 2011, to make sure that there is room for data before and after the policies took effect (buffers).
+
+ 
+## Dataset Information
+
+
+
+## Data Wrangling
+
+
+
+```{r data wrangling, echo=FALSE}
+# Install/load packages
+
+
+# Import Data
+
+
+```
+## Time Series Analysis
+
+```{r time series, echo= FALSE}
+
+```
+
+
+## Generalized Linear Modeling
+
+```{r GLM, echo= FALSE}
+
+```
+
+
+## Spatial Analysis
+
+```{r spatial, echo=FALSE}
+
+```
+
+## Summary & Conclusions
+**Analysis Summary**
+
+**Conclusions**
+
+
