@@ -4,6 +4,10 @@ author: "Grace Choi, Qiaotong Pang, & Jess Garcia"
 date: "April 26, 2021"
 output: pdf_document
 ---
+**GitHub Repository**
+
+Link to final project repository: [Garcia_Choi_Panf_ENV872_ProjectRepository](https://github.com/jmg144/Garcia_Choi_Pang_ENV872_ProjectRepository)
+
 
 ## Rationale & Research Questions
 **Primary Research Question:** Is there a relationship between sea turtle protection policies (light pollution ordinances) in Florida [cities? Counties?] and the amount of radiance those [cities? Counties?] output? 
@@ -32,6 +36,10 @@ The state of Florida provided model lighting ordinance for local governments to 
  
 ## Dataset Information
 
+Even though this analysis focuses on average yearly data for radiance, we wanted to check quickly to see how it changes throughout the year. We found higher resolution data that pulled average monthly radiance for the years 2012 to 2020, and looked at Atlantic Beach. We saw that there is seasonality in the data, possibly relating to tourist season. We will still focus on yearly average, but it's good to know.
+```{r}
+
+```
 
 
 ## Data Wrangling
