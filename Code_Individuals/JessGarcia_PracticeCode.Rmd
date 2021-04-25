@@ -3,8 +3,1294 @@ title: "Jess's Practice Code"
 author: "Jess Garcia"
 date: "4/18/2021"
 output: pdf_document
+editor_options: 
+  chunk_output_type: console
 ---
 ## View & Wrangle data
-```{r setup, include=FALSE}
+```{r setup,  warning=FALSE, message=FALSE}
+#install.packages("tseries")
 
-Radiance_data <- read.csv('./Data/ProcessedData_GroupProject_20210418.csv', StringsAsFactors = TRUE)
+library(tidyverse)
+library(trend)
+library(zoo)
+library(Kendall)
+library(tseries)
+library(lubridate)
+library(cowplot)
+
+
+Radiance_data_long <- read.csv('../Data/Long_20210419.csv')
+
+#Set date as date, create month & day column then join
+class(Radiance_data_long$Year)
+
+Radiance_data_long$Month <- 1
+Radiance_data_long$Day <-1
+
+Radiance_data_long <-
+  Radiance_data_long %>% 
+  mutate(Date=(paste0(Year,"-",Month,"-",Day)))
+
+
+Radiance_data_long$Date <- as.Date(Radiance_data_long$Date, format= "%Y-%m-%d")
+
+
+class(Radiance_data_long$Date)
+
+
+#Filter for Cities/Counties with policy implementation between 2000-2005
+
+Radiance_data_long_filtered <-
+  Radiance_data_long %>% 
+  filter(Implemented %in% 2000:2005)
+```
+
+
+```{r eval=FALSE, include=FALSE,  warning=FALSE, message=FALSE}
+
+Radiance_long.plot <-
+  ggplot(Radiance_data_long, aes (x=Date, y=value, color= County))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  scale_x_date(date_labels="%Y")+
+  theme(axis.text.x = element_text(angle=45, hjust=1))
+
+Radiance_long.plot
+
+
+Radiance_long_filtered.plot <-
+  ggplot(Radiance_data_long_filtered, aes (x=Date, y=value, color= County))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  scale_x_date(date_breaks = "2 years", date_labels = "%Y")+
+  theme(axis.text.x = element_text(angle=45, hjust=1))
+
+Radiance_long_filtered.plot
+```
+
+```{r eval=FALSE, include=FALSE,  warning=FALSE, message=FALSE}
+#Isolating each county
+AnnaMaria <- Radiance_data_long_filtered %>% 
+  filter(County == "Anna Maria Island")
+
+
+AnnaMaria.plot <-
+ ggplot(AnnaMaria, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Anna Maria Island")+
+  geom_vline(xintercept = as.numeric(ymd("2003-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(data=subset(data, Date < 2003), method='lm',formula=y~x,se=FALSE, color = "red")+
+  geom_smooth(data=subset(data, Date >= 2003), method='lm',formula=y~x,se=FALSE, color = "blue")
+
+AnnaMaria.plot
+
+
+#Faceting
+AnnaMaria$Date <- ifelse(Date < 2003, "Before", "After")
+
+AnnaMaria.plot2 <-
+ ggplot(AnnaMaria, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Anna Maria Island")+
+  geom_vline(xintercept = as.numeric(ymd("2003-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)+ 
+  facet_grid(value ~ Date)
+ 
+
+AnnaMaria.plot2
+
+#Splitting data for before and after 2003
+
+
+AnnaMaria <- Radiance_data_long_filtered %>% 
+  filter(County == "Anna Maria Island")
+
+AnnaMaria.plotA <-
+ ggplot(AnnaMaria, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Anna Maria Island", subtitle= "Average annual radiance before policy")+
+  geom_vline(xintercept = as.numeric(ymd("2003-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("1992-01-01","2003-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+AnnaMaria.plotA
+
+
+
+AnnaMaria.plotB <-
+ ggplot(AnnaMaria, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Anna Maria Island", subtitle= "Average annual radiance after policy")+
+  geom_vline(xintercept = as.numeric(ymd("2003-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("2003-01-01","2013-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+AnnaMaria.plotB
+
+#Plotting them side by side
+plot_grid(AnnaMaria.plotA, AnnaMaria.plotB, nrow=1, align='h')
+
+```
+
+
+```{r eval=FALSE, include=FALSE,  warning=FALSE, message=FALSE}
+#Bay County
+BayCounty <- Radiance_data_long_filtered %>% 
+  filter(County == "Bay County")
+
+BayCounty.plotA <-
+ ggplot(BayCounty, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Bay County", subtitle= "Average annual radiance before policy")+
+  geom_vline(xintercept = as.numeric(ymd("2002-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("1992-01-01","2002-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+BayCounty.plotA
+
+
+
+BayCounty.plotB <-
+ ggplot(BayCounty, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Bay County", subtitle= "Average annual radiance after policy")+
+  geom_vline(xintercept = as.numeric(ymd("2002-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("2002-01-01", "2013-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+BayCounty.plotB
+
+
+plot_grid(BayCounty.plotA, BayCounty.plotB, nrow=1, align='h')
+
+
+#Mexico Beach
+MexicoBeach <- Radiance_data_long_filtered %>% 
+  filter(County == "Meixco Beach")
+
+MexicoBeach.plotA <-
+ ggplot(MexicoBeach, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Mexico Beach", subtitle= "Average annual radiance before policy")+
+  geom_vline(xintercept = as.numeric(ymd("2001-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("1992-01-01","2001-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+MexicoBeach.plotA
+
+
+
+MexicoBeach.plotB <-
+ ggplot(MexicoBeach, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Mexico Beach", subtitle= "Average annual radiance after policy")+
+  geom_vline(xintercept = as.numeric(ymd("2001-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("2001-01-01", "2013-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+MexicoBeach.plotB
+
+
+plot_grid(MexicoBeach.plotA, MexicoBeach.plotB, nrow=1, align='h')
+
+
+#Deerfield Beach
+DeerfieldBeach <- Radiance_data_long_filtered %>% 
+  filter(County == "Deerfield Beach")
+
+DeerfieldBeach.plotA <-
+ ggplot(DeerfieldBeach, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Deerfield Beach", subtitle= "Average annual radiance before policy")+
+  geom_vline(xintercept = as.numeric(ymd("2000-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("1992-01-01","2000-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+DeerfieldBeach.plotA
+
+
+
+DeerfieldBeach.plotB <-
+ ggplot(DeerfieldBeach, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Deerfield Beach", subtitle= "Average annual radiance after policy")+
+  geom_vline(xintercept = as.numeric(ymd("2000-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("2000-01-01", "2013-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+DeerfieldBeach.plotB
+
+
+plot_grid(DeerfieldBeach.plotA, DeerfieldBeach.plotB, nrow=1, align='h')
+
+
+
+#Fort Lauderdale
+FortLauderdale <- Radiance_data_long_filtered %>% 
+  filter(County == "Fort Lauderdale")
+
+FortLauderdale.plotA <-
+ ggplot(DeerfieldBeach, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Fort Lauderdale", subtitle= "Average annual radiance before policy")+
+  geom_vline(xintercept = as.numeric(ymd("2003-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("1992-01-01","2003-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+FortLauderdale.plotA
+
+
+
+FortLauderdale.plotB <-
+ ggplot(DeerfieldBeach, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Fort Lauderdale", subtitle= "Average annual radiance after policy")+
+  geom_vline(xintercept = as.numeric(ymd("2003-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("2003-01-01", "2013-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+FortLauderdale.plotB
+
+
+plot_grid(FortLauderdale.plotA, FortLauderdale.plotB, nrow=1, align='h')
+
+
+
+#Hallandale Beach
+HallandaleBeach <- Radiance_data_long_filtered %>% 
+  filter(County == "Hallandale Beach")
+
+HallandaleBeach.plotA <-
+ ggplot(HallandaleBeach, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Hallandale Beach", subtitle= "Average annual radiance before policy")+
+  geom_vline(xintercept = as.numeric(ymd("2001-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("1992-01-01","2001-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+HallandaleBeach.plotA
+
+
+
+HallandaleBeach.plotB <-
+ ggplot(DeerfieldBeach, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Hallandale Beach", subtitle= "Average annual radiance after policy")+
+  geom_vline(xintercept = as.numeric(ymd("2001-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("2001-01-01", "2013-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+HallandaleBeach.plotB
+
+
+plot_grid(HallandaleBeach.plotA, HallandaleBeach.plotB, nrow=1, align='h')
+
+
+
+
+#Lauderdale By the Sea
+LauderdaleBySea <- Radiance_data_long_filtered %>% 
+  filter(County == "Lauderdale By the Sea")
+
+LauderdaleBySea.plotA <-
+ ggplot(LauderdaleBySea, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Lauderdale By the Sea", subtitle= "Average annual radiance before policy")+
+  geom_vline(xintercept = as.numeric(ymd("2002-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("1992-01-01","2002-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+LauderdaleBySea.plotA
+
+
+LauderdaleBySea.plotB <-
+ ggplot(LauderdaleBySea, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Lauderdale By the Sea", subtitle= "Average annual radiance after policy")+
+  geom_vline(xintercept = as.numeric(ymd("2002-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("2002-01-01", "2013-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+LauderdaleBySea.plotB
+
+
+plot_grid(LauderdaleBySea.plotA, LauderdaleBySea.plotB, nrow=1, align='h')
+
+
+
+#Jacksonville Beach
+JacksonvilleBeach <- Radiance_data_long_filtered %>% 
+  filter(County == "Jacksonville beach")
+
+JacksonvilleBeach.plotA <-
+ ggplot(JacksonvilleBeach, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Jacksonville Beach", subtitle= "Average annual radiance before policy")+
+  geom_vline(xintercept = as.numeric(ymd("2000-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("1992-01-01","2000-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+JacksonvilleBeach.plotA
+
+
+
+JacksonvilleBeach.plotB <-
+ ggplot(JacksonvilleBeach, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Jacksonville Beach", subtitle= "Average annual radiance after policy")+
+  geom_vline(xintercept = as.numeric(ymd("2000-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("2000-01-01", "2013-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+JacksonvilleBeach.plotB
+
+
+plot_grid(JacksonvilleBeach.plotA, JacksonvilleBeach.plotB, nrow=1, align='h')
+
+
+
+
+#Flagler County
+FlaglerCounty <- Radiance_data_long_filtered %>% 
+  filter(County == "Flagler COunty")
+
+FlaglerCounty.plotA <-
+ ggplot(FlaglerCounty, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Flagler County", subtitle= "Average annual radiance before policy")+
+  geom_vline(xintercept = as.numeric(ymd("2001-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("1992-01-01","2001-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+FlaglerCounty.plotA
+
+
+
+FlaglerCounty.plotB <-
+ ggplot(FlaglerCounty, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Flagler County", subtitle= "Average annual radiance after policy")+
+  geom_vline(xintercept = as.numeric(ymd("2001-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("2001-01-01", "2013-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+FlaglerCounty.plotB
+
+
+plot_grid(FlaglerCounty.plotA, FlaglerCounty.plotB, nrow=1, align='h')
+
+
+
+#Gulf County
+GulfCounty <- Radiance_data_long_filtered %>% 
+  filter(County == "GUlf COunty")
+
+GulfCounty.plotA <-
+ ggplot(GulfCounty, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Gulf County", subtitle= "Average annual radiance before policy")+
+  geom_vline(xintercept = as.numeric(ymd("2001-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("1992-01-01","2001-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+GulfCounty.plotA
+
+
+
+GulfCounty.plotB <-
+ ggplot(GulfCounty, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Gulf County", subtitle= "Average annual radiance after policy")+
+  geom_vline(xintercept = as.numeric(ymd("2001-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("2001-01-01", "2013-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+GulfCounty.plotB
+
+
+plot_grid(GulfCounty.plotA, GulfCounty.plotB, nrow=1, align='h')
+
+
+
+#Bonita Springs
+BonitaSprings <- Radiance_data_long_filtered %>% 
+  filter(County == "Bonita SPrings")
+
+BonitaSprings.plotA <-
+ ggplot(BonitaSprings, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Bonita Springs", subtitle= "Average annual radiance before policy")+
+  geom_vline(xintercept = as.numeric(ymd("2001-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("1992-01-01","2001-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+BonitaSprings.plotA
+
+
+BonitaSprings.plotB <-
+ ggplot(BonitaSprings, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Bonita Springs", subtitle= "Average annual radiance after policy")+
+  geom_vline(xintercept = as.numeric(ymd("2001-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("2001-01-01", "2013-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+BonitaSprings.plotB
+
+
+plot_grid(BonitaSprings.plotA, BonitaSprings.plotB, nrow=1, align='h')
+
+
+
+
+
+#Anna Maria Island
+AnnaMariaIsland <- Radiance_data_long_filtered %>% 
+  filter(County == "Anna Maria Island")
+
+AnnaMariaIsland.plotA <-
+ ggplot(AnnaMariaIsland, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Anna Maria Island", subtitle= "Average annual radiance before policy")+
+  geom_vline(xintercept = as.numeric(ymd("2003-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("1992-01-01","2003-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+AnnaMariaIsland.plotA
+
+
+AnnaMariaIsland.plotB <-
+ ggplot(AnnaMariaIsland, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Anna Maria Island", subtitle= "Average annual radiance after policy")+
+  geom_vline(xintercept = as.numeric(ymd("2003-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("2003-01-01", "2013-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+AnnaMariaIsland.plotB
+
+
+plot_grid(AnnaMariaIsland.plotA, AnnaMariaIsland.plotB, nrow=1, align='h')
+
+
+
+#Destin
+Destin <- Radiance_data_long_filtered %>% 
+  filter(County == "Destin")
+
+Destin.plotA <-
+ ggplot(Destin, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Destin", subtitle= "Average annual radiance before policy")+
+  geom_vline(xintercept = as.numeric(ymd("2004-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("1992-01-01","2004-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+Destin.plotA
+
+
+Destin.plotB <-
+ ggplot(Destin, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Destin", subtitle= "Average annual radiance after policy")+
+  geom_vline(xintercept = as.numeric(ymd("2004-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("2004-01-01", "2013-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+Destin.plotB
+
+
+plot_grid(Destin.plotA, Destin.plotB, nrow=1, align='h')
+
+
+
+
+#Pinelals County
+PinelalsCounty <- Radiance_data_long_filtered %>% 
+  filter(County == "Pinelals County")
+
+PinelalsCounty.plotA <-
+ ggplot(PinelalsCounty, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Pinelals County", subtitle= "Average annual radiance before policy")+
+  geom_vline(xintercept = as.numeric(ymd("2004-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("1992-01-01","2004-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+PinelalsCounty.plotA
+
+
+PinelalsCounty.plotB <-
+ ggplot(PinelalsCounty, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Pinelals County", subtitle= "Average annual radiance after policy")+
+  geom_vline(xintercept = as.numeric(ymd("2004-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("2004-01-01", "2013-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+PinelalsCounty.plotB
+
+
+plot_grid(PinelalsCounty.plotA, PinelalsCounty.plotB, nrow=1, align='h')
+
+
+
+#Santa Rosa
+SantaRosa <- Radiance_data_long_filtered %>% 
+  filter(County == "Santa Rosa")
+
+SantaRosa.plotA <-
+ ggplot(SantaRosa, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Santa Rosa", subtitle= "Average annual radiance before policy")+
+  geom_vline(xintercept = as.numeric(ymd("2005-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("1992-01-01","2005-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+SantaRosa.plotA
+
+
+SantaRosa.plotB <-
+ ggplot(SantaRosa, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Santa Rosa", subtitle= "Average annual radiance after policy")+
+  geom_vline(xintercept = as.numeric(ymd("2005-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("2005-01-01", "2013-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+SantaRosa.plotB
+
+
+plot_grid(SantaRosa.plotA, SantaRosa.plotB, nrow=1, align='h')
+```
+
+
+
+## Time Series 
+
+
+**Locations with increasing radiance trend before and after policy**
+
+
+
+```{r warning=FALSE, message=FALSE, include = FALSE}
+
+#Bay County
+BayCounty <- Radiance_data_long_filtered %>% 
+  filter(County == "Bay County")
+
+BayCounty.plotA <-
+ ggplot(BayCounty, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Bay County", subtitle= "Average annual radiance before policy")+
+  geom_vline(xintercept = as.numeric(ymd("2002-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("1992-01-01","2002-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+BayCounty.plotA
+
+
+BayCounty.plotB <-
+ ggplot(BayCounty, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Bay County", subtitle= "Average annual radiance after policy")+
+  geom_vline(xintercept = as.numeric(ymd("2002-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("2002-01-01", "2013-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+BayCounty.plotB
+```
+
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+plot_grid(BayCounty.plotA, BayCounty.plotB, nrow=1, align='h')
+
+```
+
+```{r warning=FALSE, message=FALSE, include = FALSE}
+#Mexico Beach
+MexicoBeach <- Radiance_data_long_filtered %>% 
+  filter(County == "Meixco Beach")
+
+MexicoBeach.plotA <-
+ ggplot(MexicoBeach, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Mexico Beach", subtitle= "Average annual radiance before policy")+
+  geom_vline(xintercept = as.numeric(ymd("2001-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("1992-01-01","2001-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+MexicoBeach.plotA
+
+
+
+MexicoBeach.plotB <-
+ ggplot(MexicoBeach, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Mexico Beach", subtitle= "Average annual radiance after policy")+
+  geom_vline(xintercept = as.numeric(ymd("2001-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("2001-01-01", "2013-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+MexicoBeach.plotB
+
+```
+
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+plot_grid(MexicoBeach.plotA, MexicoBeach.plotB, nrow=1, align='h')
+
+```
+
+```{r warning=FALSE, message=FALSE, include = FALSE}
+#Santa Rosa
+SantaRosa <- Radiance_data_long_filtered %>% 
+  filter(County == "Santa Rosa")
+
+SantaRosa.plotA <-
+ ggplot(SantaRosa, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Santa Rosa", subtitle= "Average annual radiance before policy")+
+  geom_vline(xintercept = as.numeric(ymd("2005-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("1992-01-01","2005-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+SantaRosa.plotA
+
+
+SantaRosa.plotB <-
+ ggplot(SantaRosa, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Santa Rosa", subtitle= "Average annual radiance after policy")+
+  geom_vline(xintercept = as.numeric(ymd("2005-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("2005-01-01", "2013-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+SantaRosa.plotB
+
+```
+
+```{r warning=FALSE, message=FALSE, echo = FALSE}
+plot_grid(SantaRosa.plotA, SantaRosa.plotB, nrow=1, align='h')
+
+```
+
+
+
+**Locations with decreasing radiance trends before and after policy**
+
+```{r warning=FALSE, message=FALSE, include = FALSE}
+#Gulf County
+GulfCounty <- Radiance_data_long_filtered %>% 
+  filter(County == "GUlf COunty")
+
+GulfCounty.plotA <-
+ ggplot(GulfCounty, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Gulf County", subtitle= "Average annual radiance before policy")+
+  geom_vline(xintercept = as.numeric(ymd("2001-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("1992-01-01","2001-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+GulfCounty.plotA
+
+
+
+GulfCounty.plotB <-
+ ggplot(GulfCounty, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Gulf County", subtitle= "Average annual radiance after policy")+
+  geom_vline(xintercept = as.numeric(ymd("2001-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("2001-01-01", "2013-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+GulfCounty.plotB
+```
+
+```{r warning=FALSE, message=FALSE, echo = FALSE}
+plot_grid(GulfCounty.plotA, GulfCounty.plotB, nrow=1, align='h')
+```
+
+```{r warning=FALSE, message=FALSE, include = FALSE}
+#Pinelals County
+PinelalsCounty <- Radiance_data_long_filtered %>% 
+  filter(County == "Pinelals County")
+
+PinelalsCounty.plotA <-
+ ggplot(PinelalsCounty, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Pinelals County", subtitle= "Average annual radiance before policy")+
+  geom_vline(xintercept = as.numeric(ymd("2004-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("1992-01-01","2004-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+PinelalsCounty.plotA
+
+
+PinelalsCounty.plotB <-
+ ggplot(PinelalsCounty, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Pinelals County", subtitle= "Average annual radiance after policy")+
+  geom_vline(xintercept = as.numeric(ymd("2004-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("2004-01-01", "2013-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+PinelalsCounty.plotB
+```
+
+```{r warning=FALSE, message=FALSE, echo = FALSE}
+plot_grid(PinelalsCounty.plotA, PinelalsCounty.plotB, nrow=1, align='h')
+
+```
+
+
+**Locations decreasing before policy and increasing after policy**
+
+```{r warning=FALSE, message=FALSE, include = FALSE}
+#Deerfield Beach
+DeerfieldBeach <- Radiance_data_long_filtered %>% 
+  filter(County == "Deerfield Beach")
+
+DeerfieldBeach.plotA <-
+ ggplot(DeerfieldBeach, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Deerfield Beach", subtitle= "Average annual radiance before policy")+
+  geom_vline(xintercept = as.numeric(ymd("2000-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("1992-01-01","2000-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+DeerfieldBeach.plotA
+
+
+DeerfieldBeach.plotB <-
+ ggplot(DeerfieldBeach, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Deerfield Beach", subtitle= "Average annual radiance after policy")+
+  geom_vline(xintercept = as.numeric(ymd("2000-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("2000-01-01", "2013-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+DeerfieldBeach.plotB
+```
+
+```{r warning=FALSE, message=FALSE, echo = FALSE}
+plot_grid(DeerfieldBeach.plotA, DeerfieldBeach.plotB, nrow=1, align='h')
+```
+
+```{r warning=FALSE, message=FALSE, include = FALSE}
+#Fort Lauderdale
+FortLauderdale <- Radiance_data_long_filtered %>% 
+  filter(County == "Fort Lauderdale")
+
+FortLauderdale.plotA <-
+ ggplot(DeerfieldBeach, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Fort Lauderdale", subtitle= "Average annual radiance before policy")+
+  geom_vline(xintercept = as.numeric(ymd("2003-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("1992-01-01","2003-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+FortLauderdale.plotA
+
+
+
+FortLauderdale.plotB <-
+ ggplot(DeerfieldBeach, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Fort Lauderdale", subtitle= "Average annual radiance after policy")+
+  geom_vline(xintercept = as.numeric(ymd("2003-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("2003-01-01", "2013-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+FortLauderdale.plotB
+```
+
+```{r warning=FALSE, message=FALSE, echo = FALSE}
+plot_grid(FortLauderdale.plotA, FortLauderdale.plotB, nrow=1, align='h')
+```
+
+```{r warning=FALSE, message=FALSE, include = FALSE}
+#Hallandale Beach
+HallandaleBeach <- Radiance_data_long_filtered %>% 
+  filter(County == "Hallandale Beach")
+
+HallandaleBeach.plotA <-
+ ggplot(HallandaleBeach, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Hallandale Beach", subtitle= "Average annual radiance before policy")+
+  geom_vline(xintercept = as.numeric(ymd("2001-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("1992-01-01","2001-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+HallandaleBeach.plotA
+
+
+
+HallandaleBeach.plotB <-
+ ggplot(DeerfieldBeach, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Hallandale Beach", subtitle= "Average annual radiance after policy")+
+  geom_vline(xintercept = as.numeric(ymd("2001-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("2001-01-01", "2013-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+HallandaleBeach.plotB
+```
+
+```{r warning=FALSE, message=FALSE, echo = FALSE}
+plot_grid(HallandaleBeach.plotA, HallandaleBeach.plotB, nrow=1, align='h')
+```
+
+```{r warning=FALSE, message=FALSE, include = FALSE}
+#Lauderdale By the Sea
+LauderdaleBySea <- Radiance_data_long_filtered %>% 
+  filter(County == "Lauderdale By the Sea")
+
+LauderdaleBySea.plotA <-
+ ggplot(LauderdaleBySea, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Lauderdale By the Sea", subtitle= "Average annual radiance before policy")+
+  geom_vline(xintercept = as.numeric(ymd("2002-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("1992-01-01","2002-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+LauderdaleBySea.plotA
+
+
+LauderdaleBySea.plotB <-
+ ggplot(LauderdaleBySea, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Lauderdale By the Sea", subtitle= "Average annual radiance after policy")+
+  geom_vline(xintercept = as.numeric(ymd("2002-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("2002-01-01", "2013-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+LauderdaleBySea.plotB
+```
+
+```{r warning=FALSE, message=FALSE, echo = FALSE}
+plot_grid(LauderdaleBySea.plotA, LauderdaleBySea.plotB, nrow=1, align='h')
+```
+
+```{r warning=FALSE, message=FALSE, include = FALSE}
+#Jacksonville Beach
+JacksonvilleBeach <- Radiance_data_long_filtered %>% 
+  filter(County == "Jacksonville beach")
+
+JacksonvilleBeach.plotA <-
+ ggplot(JacksonvilleBeach, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Jacksonville Beach", subtitle= "Average annual radiance before policy")+
+  geom_vline(xintercept = as.numeric(ymd("2000-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("1992-01-01","2000-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+JacksonvilleBeach.plotA
+
+
+
+JacksonvilleBeach.plotB <-
+ ggplot(JacksonvilleBeach, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Jacksonville Beach", subtitle= "Average annual radiance after policy")+
+  geom_vline(xintercept = as.numeric(ymd("2000-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("2000-01-01", "2013-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+JacksonvilleBeach.plotB
+```
+
+```{r warning=FALSE, message=FALSE, echo = FALSE}
+plot_grid(JacksonvilleBeach.plotA, JacksonvilleBeach.plotB, nrow=1, align='h')
+```
+
+
+```{r warning=FALSE, message=FALSE, include = FALSE}
+#Flagler County
+FlaglerCounty <- Radiance_data_long_filtered %>% 
+  filter(County == "Flagler COunty")
+
+FlaglerCounty.plotA <-
+ ggplot(FlaglerCounty, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Flagler County", subtitle= "Average annual radiance before policy")+
+  geom_vline(xintercept = as.numeric(ymd("2001-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("1992-01-01","2001-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+FlaglerCounty.plotA
+
+
+
+FlaglerCounty.plotB <-
+ ggplot(FlaglerCounty, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Flagler County", subtitle= "Average annual radiance after policy")+
+  geom_vline(xintercept = as.numeric(ymd("2001-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("2001-01-01", "2013-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+FlaglerCounty.plotB
+```
+
+```{r warning=FALSE, message=FALSE, echo = FALSE}
+plot_grid(FlaglerCounty.plotA, FlaglerCounty.plotB, nrow=1, align='h')
+```
+
+```{r warning=FALSE, message=FALSE, include = FALSE}
+#Bonita Springs
+BonitaSprings <- Radiance_data_long_filtered %>% 
+  filter(County == "Bonita SPrings")
+
+BonitaSprings.plotA <-
+ ggplot(BonitaSprings, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Bonita Springs", subtitle= "Average annual radiance before policy")+
+  geom_vline(xintercept = as.numeric(ymd("2001-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("1992-01-01","2001-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+BonitaSprings.plotA
+
+
+BonitaSprings.plotB <-
+ ggplot(BonitaSprings, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Bonita Springs", subtitle= "Average annual radiance after policy")+
+  geom_vline(xintercept = as.numeric(ymd("2001-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("2001-01-01", "2013-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+BonitaSprings.plotB
+```
+
+```{r warning=FALSE, message=FALSE, echo = FALSE}
+plot_grid(BonitaSprings.plotA, BonitaSprings.plotB, nrow=1, align='h')
+```
+
+```{r warning=FALSE, message=FALSE, include = FALSE}
+#Anna Maria Island
+AnnaMariaIsland <- Radiance_data_long_filtered %>% 
+  filter(County == "Anna Maria Island")
+
+AnnaMariaIsland.plotA <-
+ ggplot(AnnaMariaIsland, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Anna Maria Island", subtitle= "Average annual radiance before policy")+
+  geom_vline(xintercept = as.numeric(ymd("2003-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("1992-01-01","2003-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+AnnaMariaIsland.plotA
+
+
+AnnaMariaIsland.plotB <-
+ ggplot(AnnaMariaIsland, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Anna Maria Island", subtitle= "Average annual radiance after policy")+
+  geom_vline(xintercept = as.numeric(ymd("2003-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("2003-01-01", "2013-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+AnnaMariaIsland.plotB
+```
+
+```{r warning=FALSE, message=FALSE, echo = FALSE}
+plot_grid(AnnaMariaIsland.plotA, AnnaMariaIsland.plotB, nrow=1, align='h')
+```
+
+
+```{r warning=FALSE, message=FALSE, include = FALSE}
+#Destin
+Destin <- Radiance_data_long_filtered %>% 
+  filter(County == "Destin")
+
+Destin.plotA <-
+ ggplot(Destin, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Destin", subtitle= "Average annual radiance before policy")+
+  geom_vline(xintercept = as.numeric(ymd("2004-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("1992-01-01","2004-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+Destin.plotA
+
+
+Destin.plotB <-
+ ggplot(Destin, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Destin", subtitle= "Average annual radiance after policy")+
+  geom_vline(xintercept = as.numeric(ymd("2004-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("2004-01-01", "2013-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+Destin.plotB
+```
+
+```{r warning=FALSE, message=FALSE, echo = FALSE}
+plot_grid(Destin.plotA, Destin.plotB, nrow=1, align='h')
+```
+
+
+```
+
+**Locations with no obvious differences before and after policy (whether increasing or decreasing trends)**
+
+```{r eval= FALSE, include = FALSE, warning=FALSE, message=FALSE}
+#Santa Rosa
+SantaRosa <- Radiance_data_long_filtered %>% 
+  filter(County == "Santa Rosa")
+
+SantaRosa.plotA <-
+ ggplot(SantaRosa, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Santa Rosa", subtitle= "Average annual radiance before policy")+
+  geom_vline(xintercept = as.numeric(ymd("2005-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("1992-01-01","2005-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+SantaRosa.plotA
+
+
+SantaRosa.plotB <-
+ ggplot(SantaRosa, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Santa Rosa", subtitle= "Average annual radiance after policy")+
+  geom_vline(xintercept = as.numeric(ymd("2005-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("2005-01-01", "2013-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+SantaRosa.plotB
+
+
+plot_grid(SantaRosa.plotA, SantaRosa.plotB, nrow=1, align='h')
+
+
+
+#Pinelals County
+PinelalsCounty <- Radiance_data_long_filtered %>% 
+  filter(County == "Pinelals County")
+
+PinelalsCounty.plotA <-
+ ggplot(PinelalsCounty, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Pinelals County", subtitle= "Average annual radiance before policy")+
+  geom_vline(xintercept = as.numeric(ymd("2004-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("1992-01-01","2004-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+PinelalsCounty.plotA
+
+
+PinelalsCounty.plotB <-
+ ggplot(PinelalsCounty, aes (x=Date, y=value))+
+  geom_line()+
+  labs(x="Year", y="Radiance")+
+  ggtitle("Pinelals County", subtitle= "Average annual radiance after policy")+
+  geom_vline(xintercept = as.numeric(ymd("2004-01-01")), lty=2, color ="red")+
+  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(angle=45, hjust=1))+
+  scale_x_date(limits=as.Date(c("2004-01-01", "2013-01-01")), date_breaks = "2 years", date_labels = "%Y")+
+  geom_smooth(method = "lm", se = FALSE)
+
+PinelalsCounty.plotB
+
+
+plot_grid(PinelalsCounty.plotA, PinelalsCounty.plotB, nrow=1, align='h')
+```
+
+**Results Summary**
+* 
+
+**Analysis**
+
+
