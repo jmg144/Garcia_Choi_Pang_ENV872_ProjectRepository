@@ -7,7 +7,7 @@ editor_options:
   chunk_output_type: console
 ---
 ## View & Wrangle data
-```{r setup,  warning=FALSE, message=FALSE}
+```{r setup,  warning=FALSE, message=FALSE, include = FALSE}
 #install.packages("tseries")
 
 library(tidyverse)
@@ -158,7 +158,7 @@ BayCounty.plotA <-
   labs(x="Year", y="Radiance")+
   ggtitle("Bay County", subtitle= "Average annual radiance before policy")+
   geom_vline(xintercept = as.numeric(ymd("2002-01-01")), lty=2, color ="red")+
-  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(plot.title=element_text(face="bold"), plot.subtitle = element_text(hjust=0.5))+
   theme(axis.text.x = element_text(angle=45, hjust=1))+
   scale_x_date(limits=as.Date(c("1992-01-01","2002-01-01")), date_breaks = "2 years", date_labels = "%Y")+
   geom_smooth(method = "lm", se = FALSE)
@@ -170,8 +170,8 @@ BayCounty.plotA
 BayCounty.plotB <-
  ggplot(BayCounty, aes (x=Date, y=value))+
   geom_line()+
-  labs(x="Year", y="Radiance")+
-  ggtitle("Bay County", subtitle= "Average annual radiance after policy")+
+  labs(x="Year", y=" ")+
+  ggtitle(" ", subtitle= "After policy")+
   geom_vline(xintercept = as.numeric(ymd("2002-01-01")), lty=2, color ="red")+
   theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
   theme(axis.text.x = element_text(angle=45, hjust=1))+
@@ -683,7 +683,7 @@ BayCounty.plotA <-
   labs(x="Year", y="Radiance")+
   ggtitle("Bay County", subtitle= "Average annual radiance before policy")+
   geom_vline(xintercept = as.numeric(ymd("2002-01-01")), lty=2, color ="red")+
-  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(plot.title=element_text(face="bold"), plot.subtitle = element_text(hjust=0.5))+
   theme(axis.text.x = element_text(angle=45, hjust=1))+
   scale_x_date(limits=as.Date(c("1992-01-01","2002-01-01")), date_breaks = "2 years", date_labels = "%Y")+
   geom_smooth(method = "lm", se = FALSE)
@@ -694,8 +694,8 @@ BayCounty.plotA
 BayCounty.plotB <-
  ggplot(BayCounty, aes (x=Date, y=value))+
   geom_line()+
-  labs(x="Year", y="Radiance")+
-  ggtitle("Bay County", subtitle= "Average annual radiance after policy")+
+  labs(x="Year", y=" ")+
+  ggtitle(" ", subtitle= "After policy")+
   geom_vline(xintercept = as.numeric(ymd("2002-01-01")), lty=2, color ="red")+
   theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
   theme(axis.text.x = element_text(angle=45, hjust=1))+
@@ -721,7 +721,7 @@ MexicoBeach.plotA <-
   labs(x="Year", y="Radiance")+
   ggtitle("Mexico Beach", subtitle= "Average annual radiance before policy")+
   geom_vline(xintercept = as.numeric(ymd("2001-01-01")), lty=2, color ="red")+
-  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(plot.title=element_text(face="bold"), plot.subtitle = element_text(hjust=0.5))+
   theme(axis.text.x = element_text(angle=45, hjust=1))+
   scale_x_date(limits=as.Date(c("1992-01-01","2001-01-01")), date_breaks = "2 years", date_labels = "%Y")+
   geom_smooth(method = "lm", se = FALSE)
@@ -733,8 +733,8 @@ MexicoBeach.plotA
 MexicoBeach.plotB <-
  ggplot(MexicoBeach, aes (x=Date, y=value))+
   geom_line()+
-  labs(x="Year", y="Radiance")+
-  ggtitle("Mexico Beach", subtitle= "Average annual radiance after policy")+
+  labs(x="Year", y="")+
+  ggtitle("", subtitle= "After policy")+
   geom_vline(xintercept = as.numeric(ymd("2001-01-01")), lty=2, color ="red")+
   theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
   theme(axis.text.x = element_text(angle=45, hjust=1))+
@@ -761,7 +761,7 @@ SantaRosa.plotA <-
   labs(x="Year", y="Radiance")+
   ggtitle("Santa Rosa", subtitle= "Average annual radiance before policy")+
   geom_vline(xintercept = as.numeric(ymd("2005-01-01")), lty=2, color ="red")+
-  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(plot.title=element_text(face="bold"), plot.subtitle = element_text(hjust=0.5))+
   theme(axis.text.x = element_text(angle=45, hjust=1))+
   scale_x_date(limits=as.Date(c("1992-01-01","2005-01-01")), date_breaks = "2 years", date_labels = "%Y")+
   geom_smooth(method = "lm", se = FALSE)
@@ -772,8 +772,8 @@ SantaRosa.plotA
 SantaRosa.plotB <-
  ggplot(SantaRosa, aes (x=Date, y=value))+
   geom_line()+
-  labs(x="Year", y="Radiance")+
-  ggtitle("Santa Rosa", subtitle= "Average annual radiance after policy")+
+  labs(x="Year", y="")+
+  ggtitle("", subtitle= "After policy")+
   geom_vline(xintercept = as.numeric(ymd("2005-01-01")), lty=2, color ="red")+
   theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
   theme(axis.text.x = element_text(angle=45, hjust=1))+
@@ -804,7 +804,7 @@ GulfCounty.plotA <-
   labs(x="Year", y="Radiance")+
   ggtitle("Gulf County", subtitle= "Average annual radiance before policy")+
   geom_vline(xintercept = as.numeric(ymd("2001-01-01")), lty=2, color ="red")+
-  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(plot.title=element_text(face="bold"), plot.subtitle = element_text(hjust=0.5))+
   theme(axis.text.x = element_text(angle=45, hjust=1))+
   scale_x_date(limits=as.Date(c("1992-01-01","2001-01-01")), date_breaks = "2 years", date_labels = "%Y")+
   geom_smooth(method = "lm", se = FALSE)
@@ -816,8 +816,8 @@ GulfCounty.plotA
 GulfCounty.plotB <-
  ggplot(GulfCounty, aes (x=Date, y=value))+
   geom_line()+
-  labs(x="Year", y="Radiance")+
-  ggtitle("Gulf County", subtitle= "Average annual radiance after policy")+
+  labs(x="Year", y="")+
+  ggtitle("", subtitle= "After policy")+
   geom_vline(xintercept = as.numeric(ymd("2001-01-01")), lty=2, color ="red")+
   theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
   theme(axis.text.x = element_text(angle=45, hjust=1))+
@@ -842,7 +842,7 @@ PinelalsCounty.plotA <-
   labs(x="Year", y="Radiance")+
   ggtitle("Pinelals County", subtitle= "Average annual radiance before policy")+
   geom_vline(xintercept = as.numeric(ymd("2004-01-01")), lty=2, color ="red")+
-  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(plot.title=element_text(face="bold"), plot.subtitle = element_text(hjust=0.5))+
   theme(axis.text.x = element_text(angle=45, hjust=1))+
   scale_x_date(limits=as.Date(c("1992-01-01","2004-01-01")), date_breaks = "2 years", date_labels = "%Y")+
   geom_smooth(method = "lm", se = FALSE)
@@ -853,8 +853,8 @@ PinelalsCounty.plotA
 PinelalsCounty.plotB <-
  ggplot(PinelalsCounty, aes (x=Date, y=value))+
   geom_line()+
-  labs(x="Year", y="Radiance")+
-  ggtitle("Pinelals County", subtitle= "Average annual radiance after policy")+
+  labs(x="Year", y="")+
+  ggtitle("", subtitle= "After policy")+
   geom_vline(xintercept = as.numeric(ymd("2004-01-01")), lty=2, color ="red")+
   theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
   theme(axis.text.x = element_text(angle=45, hjust=1))+
@@ -883,7 +883,7 @@ DeerfieldBeach.plotA <-
   labs(x="Year", y="Radiance")+
   ggtitle("Deerfield Beach", subtitle= "Average annual radiance before policy")+
   geom_vline(xintercept = as.numeric(ymd("2000-01-01")), lty=2, color ="red")+
-  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(plot.title=element_text(face="bold"), plot.subtitle = element_text(hjust=0.5))+
   theme(axis.text.x = element_text(angle=45, hjust=1))+
   scale_x_date(limits=as.Date(c("1992-01-01","2000-01-01")), date_breaks = "2 years", date_labels = "%Y")+
   geom_smooth(method = "lm", se = FALSE)
@@ -894,8 +894,8 @@ DeerfieldBeach.plotA
 DeerfieldBeach.plotB <-
  ggplot(DeerfieldBeach, aes (x=Date, y=value))+
   geom_line()+
-  labs(x="Year", y="Radiance")+
-  ggtitle("Deerfield Beach", subtitle= "Average annual radiance after policy")+
+  labs(x="Year", y="")+
+  ggtitle("", subtitle= "After policy")+
   geom_vline(xintercept = as.numeric(ymd("2000-01-01")), lty=2, color ="red")+
   theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
   theme(axis.text.x = element_text(angle=45, hjust=1))+
@@ -920,7 +920,7 @@ FortLauderdale.plotA <-
   labs(x="Year", y="Radiance")+
   ggtitle("Fort Lauderdale", subtitle= "Average annual radiance before policy")+
   geom_vline(xintercept = as.numeric(ymd("2003-01-01")), lty=2, color ="red")+
-  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(plot.title=element_text(face="bold"), plot.subtitle = element_text(hjust=0.5))+
   theme(axis.text.x = element_text(angle=45, hjust=1))+
   scale_x_date(limits=as.Date(c("1992-01-01","2003-01-01")), date_breaks = "2 years", date_labels = "%Y")+
   geom_smooth(method = "lm", se = FALSE)
@@ -932,8 +932,8 @@ FortLauderdale.plotA
 FortLauderdale.plotB <-
  ggplot(DeerfieldBeach, aes (x=Date, y=value))+
   geom_line()+
-  labs(x="Year", y="Radiance")+
-  ggtitle("Fort Lauderdale", subtitle= "Average annual radiance after policy")+
+  labs(x="Year", y="")+
+  ggtitle("", subtitle= "After policy")+
   geom_vline(xintercept = as.numeric(ymd("2003-01-01")), lty=2, color ="red")+
   theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
   theme(axis.text.x = element_text(angle=45, hjust=1))+
@@ -958,7 +958,7 @@ HallandaleBeach.plotA <-
   labs(x="Year", y="Radiance")+
   ggtitle("Hallandale Beach", subtitle= "Average annual radiance before policy")+
   geom_vline(xintercept = as.numeric(ymd("2001-01-01")), lty=2, color ="red")+
-  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(plot.title=element_text(face="bold"), plot.subtitle = element_text(hjust=0.5))+
   theme(axis.text.x = element_text(angle=45, hjust=1))+
   scale_x_date(limits=as.Date(c("1992-01-01","2001-01-01")), date_breaks = "2 years", date_labels = "%Y")+
   geom_smooth(method = "lm", se = FALSE)
@@ -970,8 +970,8 @@ HallandaleBeach.plotA
 HallandaleBeach.plotB <-
  ggplot(DeerfieldBeach, aes (x=Date, y=value))+
   geom_line()+
-  labs(x="Year", y="Radiance")+
-  ggtitle("Hallandale Beach", subtitle= "Average annual radiance after policy")+
+  labs(x="Year", y="")+
+  ggtitle("", subtitle= "After policy")+
   geom_vline(xintercept = as.numeric(ymd("2001-01-01")), lty=2, color ="red")+
   theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
   theme(axis.text.x = element_text(angle=45, hjust=1))+
@@ -996,7 +996,7 @@ LauderdaleBySea.plotA <-
   labs(x="Year", y="Radiance")+
   ggtitle("Lauderdale By the Sea", subtitle= "Average annual radiance before policy")+
   geom_vline(xintercept = as.numeric(ymd("2002-01-01")), lty=2, color ="red")+
-  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(plot.title=element_text(face="bold"), plot.subtitle = element_text(hjust=0.5))+
   theme(axis.text.x = element_text(angle=45, hjust=1))+
   scale_x_date(limits=as.Date(c("1992-01-01","2002-01-01")), date_breaks = "2 years", date_labels = "%Y")+
   geom_smooth(method = "lm", se = FALSE)
@@ -1007,8 +1007,8 @@ LauderdaleBySea.plotA
 LauderdaleBySea.plotB <-
  ggplot(LauderdaleBySea, aes (x=Date, y=value))+
   geom_line()+
-  labs(x="Year", y="Radiance")+
-  ggtitle("Lauderdale By the Sea", subtitle= "Average annual radiance after policy")+
+  labs(x="Year", y="")+
+  ggtitle("", subtitle= "After policy")+
   geom_vline(xintercept = as.numeric(ymd("2002-01-01")), lty=2, color ="red")+
   theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
   theme(axis.text.x = element_text(angle=45, hjust=1))+
@@ -1033,7 +1033,7 @@ JacksonvilleBeach.plotA <-
   labs(x="Year", y="Radiance")+
   ggtitle("Jacksonville Beach", subtitle= "Average annual radiance before policy")+
   geom_vline(xintercept = as.numeric(ymd("2000-01-01")), lty=2, color ="red")+
-  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(plot.title=element_text(face="bold"), plot.subtitle = element_text(hjust=0.5))+
   theme(axis.text.x = element_text(angle=45, hjust=1))+
   scale_x_date(limits=as.Date(c("1992-01-01","2000-01-01")), date_breaks = "2 years", date_labels = "%Y")+
   geom_smooth(method = "lm", se = FALSE)
@@ -1045,8 +1045,8 @@ JacksonvilleBeach.plotA
 JacksonvilleBeach.plotB <-
  ggplot(JacksonvilleBeach, aes (x=Date, y=value))+
   geom_line()+
-  labs(x="Year", y="Radiance")+
-  ggtitle("Jacksonville Beach", subtitle= "Average annual radiance after policy")+
+  labs(x="Year", y="")+
+  ggtitle("", subtitle= "After policy")+
   geom_vline(xintercept = as.numeric(ymd("2000-01-01")), lty=2, color ="red")+
   theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
   theme(axis.text.x = element_text(angle=45, hjust=1))+
@@ -1072,7 +1072,7 @@ FlaglerCounty.plotA <-
   labs(x="Year", y="Radiance")+
   ggtitle("Flagler County", subtitle= "Average annual radiance before policy")+
   geom_vline(xintercept = as.numeric(ymd("2001-01-01")), lty=2, color ="red")+
-  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(plot.title=element_text(face="bold"), plot.subtitle = element_text(hjust=0.5))+
   theme(axis.text.x = element_text(angle=45, hjust=1))+
   scale_x_date(limits=as.Date(c("1992-01-01","2001-01-01")), date_breaks = "2 years", date_labels = "%Y")+
   geom_smooth(method = "lm", se = FALSE)
@@ -1084,8 +1084,8 @@ FlaglerCounty.plotA
 FlaglerCounty.plotB <-
  ggplot(FlaglerCounty, aes (x=Date, y=value))+
   geom_line()+
-  labs(x="Year", y="Radiance")+
-  ggtitle("Flagler County", subtitle= "Average annual radiance after policy")+
+  labs(x="Year", y="")+
+  ggtitle("", subtitle= "After policy")+
   geom_vline(xintercept = as.numeric(ymd("2001-01-01")), lty=2, color ="red")+
   theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
   theme(axis.text.x = element_text(angle=45, hjust=1))+
@@ -1110,7 +1110,7 @@ BonitaSprings.plotA <-
   labs(x="Year", y="Radiance")+
   ggtitle("Bonita Springs", subtitle= "Average annual radiance before policy")+
   geom_vline(xintercept = as.numeric(ymd("2001-01-01")), lty=2, color ="red")+
-  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(plot.title=element_text(face="bold"), plot.subtitle = element_text(hjust=0.5))+
   theme(axis.text.x = element_text(angle=45, hjust=1))+
   scale_x_date(limits=as.Date(c("1992-01-01","2001-01-01")), date_breaks = "2 years", date_labels = "%Y")+
   geom_smooth(method = "lm", se = FALSE)
@@ -1121,8 +1121,8 @@ BonitaSprings.plotA
 BonitaSprings.plotB <-
  ggplot(BonitaSprings, aes (x=Date, y=value))+
   geom_line()+
-  labs(x="Year", y="Radiance")+
-  ggtitle("Bonita Springs", subtitle= "Average annual radiance after policy")+
+  labs(x="Year", y="")+
+  ggtitle("", subtitle= "After policy")+
   geom_vline(xintercept = as.numeric(ymd("2001-01-01")), lty=2, color ="red")+
   theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
   theme(axis.text.x = element_text(angle=45, hjust=1))+
@@ -1147,7 +1147,7 @@ AnnaMariaIsland.plotA <-
   labs(x="Year", y="Radiance")+
   ggtitle("Anna Maria Island", subtitle= "Average annual radiance before policy")+
   geom_vline(xintercept = as.numeric(ymd("2003-01-01")), lty=2, color ="red")+
-  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(plot.title=element_text(face="bold"), plot.subtitle = element_text(hjust=0.5))+
   theme(axis.text.x = element_text(angle=45, hjust=1))+
   scale_x_date(limits=as.Date(c("1992-01-01","2003-01-01")), date_breaks = "2 years", date_labels = "%Y")+
   geom_smooth(method = "lm", se = FALSE)
@@ -1158,8 +1158,8 @@ AnnaMariaIsland.plotA
 AnnaMariaIsland.plotB <-
  ggplot(AnnaMariaIsland, aes (x=Date, y=value))+
   geom_line()+
-  labs(x="Year", y="Radiance")+
-  ggtitle("Anna Maria Island", subtitle= "Average annual radiance after policy")+
+  labs(x="Year", y="")+
+  ggtitle("", subtitle= "After policy")+
   geom_vline(xintercept = as.numeric(ymd("2003-01-01")), lty=2, color ="red")+
   theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
   theme(axis.text.x = element_text(angle=45, hjust=1))+
@@ -1185,7 +1185,7 @@ Destin.plotA <-
   labs(x="Year", y="Radiance")+
   ggtitle("Destin", subtitle= "Average annual radiance before policy")+
   geom_vline(xintercept = as.numeric(ymd("2004-01-01")), lty=2, color ="red")+
-  theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
+  theme(plot.title=element_text(face="bold"), plot.subtitle = element_text(hjust=0.5))+
   theme(axis.text.x = element_text(angle=45, hjust=1))+
   scale_x_date(limits=as.Date(c("1992-01-01","2004-01-01")), date_breaks = "2 years", date_labels = "%Y")+
   geom_smooth(method = "lm", se = FALSE)
@@ -1196,8 +1196,8 @@ Destin.plotA
 Destin.plotB <-
  ggplot(Destin, aes (x=Date, y=value))+
   geom_line()+
-  labs(x="Year", y="Radiance")+
-  ggtitle("Destin", subtitle= "Average annual radiance after policy")+
+  labs(x="Year", y="")+
+  ggtitle("", subtitle= "After policy")+
   geom_vline(xintercept = as.numeric(ymd("2004-01-01")), lty=2, color ="red")+
   theme(plot.title=element_text(hjust=0.5, face="bold"), plot.subtitle = element_text(hjust=0.5))+
   theme(axis.text.x = element_text(angle=45, hjust=1))+
