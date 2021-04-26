@@ -887,8 +887,15 @@ It may also be useful to compare to other locations around the U.S. or globally,
 
 
 ## Resources ##
+
 * [Florida Sea Turtle Protection Ordinances](https://myfwc.com/conservation/you-conserve/lighting/ordinances/)
 
 * [Other U.S. States with light pollution laws](https://www.ncsl.org/research/environment-and-natural-resources/states-shut-out-light-pollution.aspx)
 
 
+***
+
+## Appendix
+
+```{r ref.label=knitr::all_labels(), echo = T, eval=FALSE}
+```
