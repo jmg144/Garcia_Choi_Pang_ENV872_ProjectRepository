@@ -14,7 +14,7 @@ Florida Fish And Wildlife Conservation Commission. https://myfwc.com/conservatio
 <Data Structure>
 The annual radiance data covers from 1992-2013.
 The data were documented from a total of 55 locations. For the purpose of this project, we chose to only include counties/municipalities 
-that adopted sea turtle protection ordiannces between 1994-2011.
+that adopted sea turtle protection ordiannces between 2000-2005.
 
 <Units of measure>
 -avg_lights_x_pct: "The average visible band digital number (DN) of cloud-free light detections multiplied by the percent frequency of light detection. 
