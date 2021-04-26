@@ -682,11 +682,9 @@ implementation_status <- function(x,y){
   return(s)
 }
 
-#Load Light radiance data
-Light_data <- read.csv("../Data/Long_20210419.csv")
 
 #Add the the status of implementation by use function implementation_status and select counties with implementation year between 2000 and 2005
-Light_data_processed <- Light_data %>%
+Light_data_processed <- Radiance_data_long %>%
   mutate(Status=implementation_status(Implemented, Year)) %>%
   filter(Implemented > 1999 & Implemented < 2006)
 
