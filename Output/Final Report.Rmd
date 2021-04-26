@@ -782,7 +782,7 @@ plot_years_counties_B(1992)
 
 ![](./lightordmap2013.png)
 
-> As shown above, the value of light radiance decreased in some counties/locations such as Destin & Anna Maria Island; the value of light radiance changed a little in some counties/locations such as GUlf COunty & Jacksonville beach; the value of light radiance decreased in some counties/locations such as Bay County & Walton.
+> As shown above, the value of light radiance decreased in some counties/locations such as Destin & Anna Maria Island; the value of light radiance changed a little in some counties/locations such as GUlf COunty & Jacksonville beach; the value of light radiance increased in some counties/locations such as Bay County & Walton.
 
 ```{r spatial analysis by using ggplot, echo = FALSE}
 ## ## plot the light radiance value for different years one by one (ggplot function)
@@ -864,7 +864,13 @@ myMap <- ggplot() +
 print(myMap)
 
 ```
-> As mapview also did not work for rmd, so we used ggplot to plot the difference of mean value of the light radiation before and after the implementation of the ordinance for different counties/locations. As shown above, the color denotes the difference between mean value of the light radiation before and after the implementation of the ordinance. Negative df means the light radiation decreased after the implementation of the ordiance and positve df means the light radiation increased after the implementation of the ordiance. The size of the circle represented the value of the mean light radiation before the implementation of the ordiance.
+> Because mapview also did not work for rmd, so we used ggplot to plot the difference of the mean value of the light radiation before and after the implementation of the ordinance for different counties/locations. 
+
+> As shown above, the color denotes the difference between the mean value of the light radiation before and after the implementation of the ordinance. Negative df means the light radiation decreased after the implementation of the ordinance and positive df means the light radiation increased after the implementation of the ordinance. Only in three counties/locations, light radiation decreased after the implementation of ordinance, which means Sea Turtle Lighting Ordinance only works for a few counties
+
+
+> The size of the circle represented the value of the mean light radiation before the implementation of the ordinance, which can be considered as the baseline of Light radiation. This graph also demonstrated that counties/locations that have a higher baseline (meanvalue.x) usually have small light radiation differences (diff). The higher baseline may result from the population or economic development. Further research related to investigating the impacts of socioeconomic metrics on light radiation as well as the implementation of the sea turtle lighting ordinance will be needed.
+
 
 
 
