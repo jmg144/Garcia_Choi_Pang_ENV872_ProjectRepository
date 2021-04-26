@@ -42,16 +42,377 @@ Even though this analysis focuses on average yearly data for radiance, we wanted
 ```
 
 
-# Data Wrangling
-
-
-
-```{r data wrangling, echo=FALSE}
+```{r data wrangling, warning=FALSE, message=FALSE, include = FALSE}
 # Install/load packages
-
+library(dplyr)
+library(rvest)
+library(plyr)
 
 # Import Data
+############################## Data Prep: Ordinance############################ 
+############################# Data Scraping fromFlorida Fish and Wildlife Conservation Commission
 
+webpage <- read_html("https://myfwc.com/conservation/you-conserve/lighting/ordinances/")
+
+Location <- webpage %>% 
+  html_nodes('td:nth-child(1)') %>%
+  html_text()
+Location<-as.data.frame(Location)
+
+Implemented <- webpage %>% 
+  html_nodes('td:nth-child(2)') %>%
+  html_text()
+Implemented<-as.data.frame(Implemented)
+
+
+df_withdrawals <- data.frame
+Ordinance<- data.frame(Location, Implemented)
+introd.ordinance<-data.frame(do.call("rbind", strsplit(as.character(Ordinance$Implemented), "/", fixed = TRUE)))
+
+Ordinance.introduced<-data.frame(Location, introd.ordinance$X1)
+names(Ordinance.introduced)<-c("Location", "Implemented")
+head(Ordinance.introduced)
+Ordinance.introduced<-data.frame(Ordinance.introduced)
+
+names(Ordinance.introduced)<-c("County","BayCounty")
+Ordinance.introduced<- rename(Ordinance.introduced, c("Bay County " = "BayCounty"))
+
+
+############################## Data Prep: Light ############################## 
+############################# Reading csv files from Earth Engine
+BayCounty<- read.csv("../Data/RawData_GoogleEarth/BayCounty.csv")
+BayCounty<-na.omit(BayCounty)
+BayCounty$Date<- as.Date(BayCounty$Date, format = "%m/%d/%Y")
+BayCounty <- rename(BayCounty, c("radiance" = "BayCounty"))
+
+names(BayCounty)<-c("Date", "BayCounty")
+
+MeixcoBeach<- read.csv("../Data/RawData_GoogleEarth/MeixcoBeach.csv")
+MeixcoBeach<-na.omit(MeixcoBeach)
+MeixcoBeach$Date<- as.Date(MeixcoBeach$Date, format = "%m/%d/%Y")
+MeixcoBeach <- rename(MeixcoBeach, c("avg_lights_x_pct" = "MeixcoBeach"))
+
+PanamaCityBeach<- read.csv("../Data/RawData_GoogleEarth/PanamaCityBeach.csv")
+PanamaCityBeach<-na.omit(PanamaCityBeach)
+PanamaCityBeach$Date<- as.Date(PanamaCityBeach$Date, format = "%m/%d/%Y")
+PanamaCityBeach <- rename(PanamaCityBeach, c("avg_lights_x_pct" = "PanamaCityBeach"))
+
+CapeCanaveral<- read.csv("../Data/RawData_GoogleEarth/CapeCanaveral.csv")
+CapeCanaveral<-na.omit(CapeCanaveral)
+CapeCanaveral$Date<- as.Date(CapeCanaveral$Date, format = "%m/%d/%Y")
+CapeCanaveral <- rename(CapeCanaveral, c("avg_lights_x_pct" = "CapeCanaveral"))
+
+SatelliteBeach<- read.csv("../Data/RawData_GoogleEarth/SatelliteBeach.csv")
+SatelliteBeach<-na.omit(SatelliteBeach)
+SatelliteBeach$Date<- as.Date(SatelliteBeach$Date, format = "%m/%d/%Y")
+SatelliteBeach <- rename(SatelliteBeach, c("avg_lights_x_pct" = "SatelliteBeach"))
+
+DaniaBeach<- read.csv("../Data/RawData_GoogleEarth/DaniaBeach.csv")
+DaniaBeach<-na.omit(DaniaBeach)
+DaniaBeach$Date<- as.Date(DaniaBeach$Date, format = "%m/%d/%Y")
+DaniaBeach <- rename(DaniaBeach, c("avg_lights_x_pct" = "DaniaBeach"))
+
+DeerfieldBeach<- read.csv("../Data/RawData_GoogleEarth/DeerfieldBeach.csv")
+DeerfieldBeach<-na.omit(DeerfieldBeach)
+DeerfieldBeach$Date<- as.Date(DeerfieldBeach$Date, format = "%m/%d/%Y")
+DeerfieldBeach <- rename(DeerfieldBeach, c("avg_lights_x_pct" = "DeerfieldBeach"))
+
+FortLauderdale<- read.csv("../Data/RawData_GoogleEarth/FortLauderdale.csv")
+FortLauderdale<-na.omit(FortLauderdale)
+FortLauderdale$Date<- as.Date(FortLauderdale$Date, format = "%m/%d/%Y")
+FortLauderdale <- rename(FortLauderdale, c("avg_lights_x_pct" = "FortLauderdale"))
+
+HallandaleBeach<- read.csv("../Data/RawData_GoogleEarth/HallandaleBeach.csv")
+HallandaleBeach<-na.omit(HallandaleBeach)
+HallandaleBeach$Date<- as.Date(HallandaleBeach$Date, format = "%m/%d/%Y")
+HallandaleBeach <- rename(HallandaleBeach, c("avg_lights_x_pct" = "HallandaleBeach"))
+
+HillsboroBeach<- read.csv("../Data/RawData_GoogleEarth/HillsboroBeach.csv")
+HillsboroBeach<-na.omit(HillsboroBeach)
+HillsboroBeach$Date<- as.Date(HillsboroBeach$Date, format = "%m/%d/%Y")
+HillsboroBeach <- rename(HillsboroBeach, c("avg_lights_x_pct" = "HillsboroBeach"))
+
+Hollywoord<- read.csv("../Data/RawData_GoogleEarth/Hollywoord.csv")
+Hollywoord<-na.omit(Hollywoord)
+Hollywoord$Date<- as.Date(Hollywoord$Date, format = "%m/%d/%Y")
+Hollywoord <- rename(Hollywoord, c("avg_lights_x_pct" = "Hollywoord"))
+
+LauderdaleBytheSea<- read.csv("../Data/RawData_GoogleEarth/LauderdaleBytheSea.csv")
+LauderdaleBytheSea<-na.omit(LauderdaleBytheSea)
+LauderdaleBytheSea$Date<- as.Date(LauderdaleBytheSea$Date, format = "%m/%d/%Y")
+LauderdaleBytheSea <- rename(LauderdaleBytheSea, c("avg_lights_x_pct" = "LauderdaleBytheSea"))
+
+PompanoBeach<- read.csv("../Data/RawData_GoogleEarth/PompanoBeach.csv")
+PompanoBeach<-na.omit(PompanoBeach)
+PompanoBeach$Date<- as.Date(PompanoBeach$Date, format = "%m/%d/%Y")
+PompanoBeach <- rename(PompanoBeach, c("avg_lights_x_pct" = "PompanoBeach"))
+
+MarcoIsland<- read.csv("../Data/RawData_GoogleEarth/MarcoIsland.csv")
+MarcoIsland<-na.omit(MarcoIsland)
+MarcoIsland$Date<- as.Date(MarcoIsland$Date, format = "%m/%d/%Y")
+MarcoIsland <- rename(MarcoIsland, c("avg_lights_x_pct" = "MarcoIsland"))
+
+Jacksonvillebeach<- read.csv("../Data/RawData_GoogleEarth/Jacksonvillebeach.csv")
+Jacksonvillebeach<-na.omit(Jacksonvillebeach)
+Jacksonvillebeach$Date<- as.Date(Jacksonvillebeach$Date, format = "%m/%d/%Y")
+Jacksonvillebeach <- rename(Jacksonvillebeach, c("avg_lights_x_pct" = "Jacksonvillebeach"))
+
+NeptuneBeach<- read.csv("../Data/RawData_GoogleEarth/NeptuneBeach.csv")
+NeptuneBeach<-na.omit(NeptuneBeach)
+NeptuneBeach$Date<- as.Date(NeptuneBeach$Date, format = "%m/%d/%Y")
+NeptuneBeach <- rename(NeptuneBeach, c("avg_lights_x_pct" = "NeptuneBeach"))
+
+EscambiaCOunty<- read.csv("../Data/RawData_GoogleEarth/EscambiaCOunty.csv")
+EscambiaCOunty<-na.omit(EscambiaCOunty)
+EscambiaCOunty$Date<- as.Date(EscambiaCOunty$Date, format = "%m/%d/%Y")
+EscambiaCOunty <- rename(BayCounty, c("avg_lights_x_pct" = "EscambiaCOunty"))
+
+FlaglerCOunty<- read.csv("../Data/RawData_GoogleEarth/FlaglerCOunty.csv")
+FlaglerCOunty<-na.omit(FlaglerCOunty)
+FlaglerCOunty$Date<- as.Date(FlaglerCOunty$Date, format = "%m/%d/%Y")
+FlaglerCOunty <- rename(FlaglerCOunty, c("avg_lights_x_pct" = "FlaglerCOunty"))
+
+FranklinCounty<- read.csv("../Data/RawData_GoogleEarth/FranklinCounty.csv")
+FranklinCounty<-na.omit(FranklinCounty)
+FranklinCounty$Date<- as.Date(FranklinCounty$Date, format = "%m/%d/%Y")
+FranklinCounty <- rename(FranklinCounty, c("avg_lights_x_pct" = "FranklinCounty"))
+
+GUlfCOunty<- read.csv("../Data/RawData_GoogleEarth/GUlfCOunty.csv")
+GUlfCOunty<-na.omit(GUlfCOunty)
+GUlfCOunty$Date<- as.Date(GUlfCOunty$Date, format = "%m/%d/%Y")
+GUlfCOunty <- rename(GUlfCOunty, c("avg_lights_x_pct" = "GUlfCOunty"))
+
+HillsboroughCounty<- read.csv("../Data/RawData_GoogleEarth/HillsboroughCounty.csv")
+HillsboroughCounty<-na.omit(HillsboroughCounty)
+HillsboroughCounty$Date<- as.Date(HillsboroughCounty$Date, format = "%m/%d/%Y")
+HillsboroughCounty <- rename(HillsboroughCounty, c("avg_lights_x_pct" = "HillsboroughCounty"))
+
+Orchid<- read.csv("../Data/RawData_GoogleEarth/Orchid.csv")
+Orchid<-na.omit(Orchid)
+Orchid$Date<- as.Date(Orchid$Date, format = "%m/%d/%Y")
+Orchid <- rename(Orchid, c("avg_lights_x_pct" = "Orchid"))
+
+VeroBeach<- read.csv("../Data/RawData_GoogleEarth/VeroBeach.csv")
+VeroBeach<-na.omit(VeroBeach)
+VeroBeach$Date<- as.Date(VeroBeach$Date, format = "%m/%d/%Y")
+VeroBeach <- rename(VeroBeach, c("avg_lights_x_pct" = "VeroBeach"))
+
+BonitaSPrings<- read.csv("../Data/RawData_GoogleEarth/BonitaSPrings.csv")
+BonitaSPrings<-na.omit(BonitaSPrings)
+BonitaSPrings$Date<- as.Date(BonitaSPrings$Date, format = "%m/%d/%Y")
+BonitaSPrings <- rename(BonitaSPrings, c("avg_lights_x_pct" = "BonitaSPrings"))
+
+Sanibel<- read.csv("../Data/RawData_GoogleEarth/Sanibel.csv")
+Sanibel<-na.omit(Sanibel)
+Sanibel$Date<- as.Date(Sanibel$Date, format = "%m/%d/%Y")
+Sanibel <- rename(Sanibel, c("avg_lights_x_pct" = "Sanibel"))
+
+AnnaMariaIsland<- read.csv("../Data/RawData_GoogleEarth/AnnaMariaIsland.csv")
+AnnaMariaIsland<-na.omit(AnnaMariaIsland)
+AnnaMariaIsland$Date<- as.Date(AnnaMariaIsland$Date, format = "%m/%d/%Y")
+AnnaMariaIsland <- rename(AnnaMariaIsland, c("avg_lights_x_pct" = "AnnaMariaIsland"))
+
+Bradenton <- read.csv("../Data/RawData_GoogleEarth/Bradenton.csv")
+Bradenton<-na.omit(Bradenton)
+Bradenton$Date<- as.Date(Bradenton$Date, format = "%m/%d/%Y")
+Bradenton <- rename(Bradenton, c("avg_lights_x_pct" = "Bradenton"))
+
+TownofJupiterIsland<- read.csv("../Data/RawData_GoogleEarth/TownofJupiterIsland.csv")
+TownofJupiterIsland<-na.omit(TownofJupiterIsland)
+TownofJupiterIsland$Date<- as.Date(TownofJupiterIsland$Date, format = "%m/%d/%Y")
+TownofJupiterIsland <- rename(TownofJupiterIsland, c("avg_lights_x_pct" = "TownofJupiterIsland"))
+
+GoldenBeach<- read.csv("../Data/RawData_GoogleEarth/GoldenBeach.csv")
+GoldenBeach<-na.omit(GoldenBeach)
+GoldenBeach$Date<- as.Date(GoldenBeach$Date, format = "%m/%d/%Y")
+GoldenBeach <- rename(GoldenBeach, c("avg_lights_x_pct" = "GoldenBeach"))
+
+MiamiBeach<- read.csv("../Data/RawData_GoogleEarth/MiamiBeach.csv")
+MiamiBeach<-na.omit(MiamiBeach)
+MiamiBeach$Date<- as.Date(MiamiBeach$Date, format = "%m/%d/%Y")
+MiamiBeach <- rename(MiamiBeach, c("avg_lights_x_pct" = "MiamiBeach"))
+
+SunnyIslesBeach<- read.csv("../Data/RawData_GoogleEarth/SunnyIslesBeach.csv")
+SunnyIslesBeach<-na.omit(SunnyIslesBeach)
+SunnyIslesBeach$Date<- as.Date(SunnyIslesBeach$Date, format = "%m/%d/%Y")
+SunnyIslesBeach <- rename(SunnyIslesBeach, c("avg_lights_x_pct" = "SunnyIslesBeach"))
+
+VillageofKeyBiscayne<- read.csv("../Data/RawData_GoogleEarth/VillageofKeyBiscayne.csv")
+VillageofKeyBiscayne<-na.omit(VillageofKeyBiscayne)
+VillageofKeyBiscayne$Date<- as.Date(VillageofKeyBiscayne$Date, format = "%m/%d/%Y")
+VillageofKeyBiscayne <- rename(VillageofKeyBiscayne, c("avg_lights_x_pct" = "VillageofKeyBiscayne"))
+
+KeyWest<- read.csv("../Data/RawData_GoogleEarth/KeyWest.csv")
+KeyWest<-na.omit(KeyWest)
+KeyWest$Date<- as.Date(KeyWest$Date, format = "%m/%d/%Y")
+KeyWest <- rename(KeyWest, c("avg_lights_x_pct" = "KeyWest"))
+
+Marathon<- read.csv("../Data/RawData_GoogleEarth/Marathon.csv")
+Marathon<-na.omit(Marathon)
+Marathon$Date<- as.Date(Marathon$Date, format = "%m/%d/%Y")
+Marathon <- rename(BayCounty, c("avg_lights_x_pct" = "Marathon"))
+
+Monroe<- read.csv("../Data/RawData_GoogleEarth/Monroe.csv")
+Monroe<-na.omit(Monroe)
+Monroe$Date<- as.Date(Monroe$Date, format = "%m/%d/%Y")
+Monroe <- rename(Monroe, c("avg_lights_x_pct" = "Monroe"))
+
+VillageofIslamorada<- read.csv("../Data/RawData_GoogleEarth/VillageofIslamorada.csv")
+VillageofIslamorada<-na.omit(VillageofIslamorada)
+VillageofIslamorada$Date<- as.Date(VillageofIslamorada$Date, format = "%m/%d/%Y")
+VillageofIslamorada <- rename(VillageofIslamorada, c("avg_lights_x_pct" = "VillageofIslamorada"))
+
+Destin<- read.csv("../Data/RawData_GoogleEarth/Destin.csv")
+Destin<-na.omit(Destin)
+Destin$Date<- as.Date(Destin$Date, format = "%m/%d/%Y")
+Destin <- rename(Destin, c("avg_lights_x_pct" = "Destin"))
+
+JunoBeach<- read.csv("../Data/RawData_GoogleEarth/JunoBeach.csv")
+JunoBeach<-na.omit(JunoBeach)
+JunoBeach$Date<- as.Date(JunoBeach$Date, format = "%m/%d/%Y")
+JunoBeach <- rename(JunoBeach, c("avg_lights_x_pct" = "JunoBeach"))
+
+BelleairBeach<- read.csv("../Data/RawData_GoogleEarth/BelleairBeach.csv")
+BelleairBeach<-na.omit(BelleairBeach)
+BelleairBeach$Date<- as.Date(BelleairBeach$Date, format = "%m/%d/%Y")
+BelleairBeach <- rename(BelleairBeach, c("avg_lights_x_pct" = "BelleairBeach"))
+
+Clearwater<- read.csv("../Data/RawData_GoogleEarth/Clearwater.csv")
+Clearwater<-na.omit(Clearwater)
+Clearwater$Date<- as.Date(Clearwater$Date, format = "%m/%d/%Y")
+Clearwater <- rename(Clearwater, c("avg_lights_x_pct" = "Clearwater"))
+
+Dunedin<- read.csv("../Data/RawData_GoogleEarth/Dunedin.csv")
+Dunedin<-na.omit(Dunedin)
+Dunedin$Date<- as.Date(Dunedin$Date, format = "%m/%d/%Y")
+Dunedin <- rename(Dunedin, c("avg_lights_x_pct" = "Dunedin"))
+
+IndianROcks<- read.csv("../Data/RawData_GoogleEarth/IndianROcks.csv")
+IndianROcks<-na.omit(IndianROcks)
+IndianROcks$Date<- as.Date(IndianROcks$Date, format = "%m/%d/%Y")
+IndianROcks <- rename(IndianROcks, c("avg_lights_x_pct" = "IndianROcks"))
+
+IndianShores<- read.csv("../Data/RawData_GoogleEarth/IndianShores.csv")
+IndianShores<-na.omit(IndianShores)
+IndianShores$Date<- as.Date(IndianShores$Date, format = "%m/%d/%Y")
+IndianShores <- rename(IndianShores, c("avg_lights_x_pct" = "IndianShores"))
+
+MadeiraBeach<- read.csv("../Data/RawData_GoogleEarth/MadeiraBeach.csv")
+MadeiraBeach<-na.omit(MadeiraBeach)
+MadeiraBeach$Date<- as.Date(MadeiraBeach$Date, format = "%m/%d/%Y")
+MadeiraBeach <- rename(MadeiraBeach, c("avg_lights_x_pct" = "MadeiraBeach"))
+
+PinelalsCounty<- read.csv("../Data/RawData_GoogleEarth/PinelalsCounty.csv")
+PinelalsCounty<-na.omit(PinelalsCounty)
+PinelalsCounty$Date<- as.Date(PinelalsCounty$Date, format = "%m/%d/%Y")
+PinelalsCounty <- rename(PinelalsCounty, c("avg_lights_x_pct" = "PinelalsCounty"))
+
+RedingtonShores<- read.csv("../Data/RawData_GoogleEarth/RedingtonShores.csv")
+RedingtonShores<-na.omit(RedingtonShores)
+RedingtonShores$Date<- as.Date(RedingtonShores$Date, format = "%m/%d/%Y")
+RedingtonShores <- rename(RedingtonShores, c("avg_lights_x_pct" = "RedingtonShores"))
+
+St.PeteBeach<- read.csv("../Data/RawData_GoogleEarth/StPeteBeach.csv")
+St.PeteBeach<-na.omit(St.PeteBeach)
+St.PeteBeach$Date<- as.Date(St.PeteBeach$Date, format = "%m/%d/%Y")
+St.PeteBeach <- rename(St.PeteBeach, c("avg_lights_x_pct" = "St.PeteBeach"))
+
+TreasureIsland<- read.csv("../Data/RawData_GoogleEarth/TreasureIsland.csv")
+TreasureIsland<-na.omit(TreasureIsland)
+TreasureIsland$Date<- as.Date(TreasureIsland$Date, format = "%m/%d/%Y")
+TreasureIsland <- rename(TreasureIsland, c("avg_lights_x_pct" = "TreasureIsland"))
+
+St.AugustineBeach<- read.csv("../Data/RawData_GoogleEarth/StAugustineBeach.csv")
+St.AugustineBeach<-na.omit(St.AugustineBeach)
+St.AugustineBeach$Date<- as.Date(St.AugustineBeach$Date, format = "%m/%d/%Y")
+St.AugustineBeach <- rename(St.AugustineBeach, c("avg_lights_x_pct" = "St.AugustineBeach"))
+
+St.JohnsCounty<- read.csv("../Data/RawData_GoogleEarth/StJohnsCounty.csv")
+St.JohnsCounty<-na.omit(St.JohnsCounty)
+St.JohnsCounty$Date<- as.Date(St.JohnsCounty$Date, format = "%m/%d/%Y")
+St.JohnsCounty <- rename(St.JohnsCounty, c("avg_lights_x_pct" = "St.JohnsCounty"))
+
+SantaRosa<- read.csv("../Data/RawData_GoogleEarth/SantaRosa.csv")
+SantaRosa<-na.omit(SantaRosa)
+SantaRosa$Date<- as.Date(SantaRosa$Date, format = "%m/%d/%Y")
+SantaRosa <- rename(SantaRosa, c("avg_lights_x_pct" = "SantaRosa"))
+
+CityofSarasota<- read.csv("../Data/RawData_GoogleEarth/CityofSarasota.csv")
+CityofSarasota<-na.omit(CityofSarasota)
+CityofSarasota$Date<- as.Date(CityofSarasota$Date, format = "%m/%d/%Y")
+CityofSarasota <- rename(CityofSarasota, c("avg_lights_x_pct" = "CityofSarasota"))
+
+SarasotaCounty<- read.csv("../Data/RawData_GoogleEarth/SarasotaCounty.csv")
+SarasotaCounty<-na.omit(SarasotaCounty)
+SarasotaCounty$Date<- as.Date(SarasotaCounty$Date, format = "%m/%d/%Y")
+SarasotaCounty <- rename(SarasotaCounty, c("avg_lights_x_pct" = "SarasotaCounty"))
+
+NewSmyrnaBeach<- read.csv("../Data/RawData_GoogleEarth/NewSmyrnaBeach.csv")
+NewSmyrnaBeach<-na.omit(NewSmyrnaBeach)
+NewSmyrnaBeach$Date<- as.Date(NewSmyrnaBeach$Date, format = "%m/%d/%Y")
+NewSmyrnaBeach <- rename(NewSmyrnaBeach, c("avg_lights_x_pct" = "NewSmyrnaBeach"))
+
+Walton<- read.csv("../Data/RawData_GoogleEarth/Walton.csv")
+Walton<-na.omit(Walton)
+Walton$Date<- as.Date(Walton$Date, format = "%m/%d/%Y")
+Walton <- rename(Walton, c("avg_lights_x_pct" = "Walton"))
+
+
+############################# Combining csv files
+
+de<-left_join(BayCounty,	MeixcoBeach)
+de<-left_join(de,	PanamaCityBeach)
+de<-left_join(de,	CapeCanaveral)
+de<-left_join(de,	SatelliteBeach)
+de<-left_join(de,	DaniaBeach)
+de<-left_join(de,	DeerfieldBeach)
+de<-left_join(de,	FortLauderdale)
+de<-left_join(de,	HallandaleBeach)
+de<-left_join(de,	HillsboroBeach)
+de<-left_join(de,	Hollywoord)
+de<-left_join(de,	LauderdaleBytheSea)
+de<-left_join(de,	PompanoBeach)
+de<-left_join(de,	MarcoIsland)
+de<-left_join(de,	Jacksonvillebeach)
+de<-left_join(de,	NeptuneBeach)
+de<-left_join(de,	EscambiaCOunty)
+de<-left_join(de,	FlaglerCOunty)
+de<-left_join(de,	FranklinCounty)
+de<-left_join(de,	GUlfCOunty)
+de<-left_join(de,	HillsboroughCounty)
+de<-left_join(de,	Orchid)
+de<-left_join(de,	VeroBeach)
+de<-left_join(de,	BonitaSPrings)
+de<-left_join(de,	Sanibel)
+de<-left_join(de,	AnnaMariaIsland)
+de<-left_join(de,	Bradenton)
+de<-left_join(de,	TownofJupiterIsland)
+de<-left_join(de,	GoldenBeach)
+de<-left_join(de,	MiamiBeach)
+de<-left_join(de,	VillageofKeyBiscayne)
+de<-left_join(de,	KeyWest)
+de<-left_join(de,	Marathon)
+de<-left_join(de,	Monroe)
+de<-left_join(de,	VillageofIslamorada)
+de<-left_join(de,	Destin)
+de<-left_join(de,	JunoBeach)
+de<-left_join(de,	BelleairBeach)
+de<-left_join(de,	Clearwater)
+de<-left_join(de,	Dunedin)
+de<-left_join(de,	IndianROcks)
+de<-left_join(de,	IndianShores)
+de<-left_join(de,	MadeiraBeach)
+de<-left_join(de,	PinelalsCounty)
+de<-left_join(de,	RedingtonShores)
+de<-left_join(de,	St.PeteBeach)
+de<-left_join(de,	TreasureIsland)
+de<-left_join(de,	St.AugustineBeach)
+de<-left_join(de,	St.JohnsCounty)
+de<-left_join(de,	SantaRosa)
+de<-left_join(de,	CityofSarasota)
+de<-left_join(de,	SarasotaCounty)
+de<-left_join(de,	NewSmyrnaBeach)
+Radiance<-left_join(de,	Walton)
 
 ```
 # Time Series Data & Pettitt Test
@@ -668,7 +1029,7 @@ plot_grid(Destin.plotA, Destin.plotB, nrow=1, align='h')
 
 # Spatial Analysis
 
-```{r data wrangling for spatial analysis}
+```{r data wrangling for spatial analysis, warning=FALSE, message=FALSE, echo = FALSE}
 ##data wrangling for spatial Analysis
 
 library(sf)
@@ -727,7 +1088,7 @@ Light_sf <- st_as_sf(Light_data_processed,
 
 > We used both mapview and ggplot for sptial analysis
 
-```{r spatial analysis by using mapview}
+```{r spatial analysis by using mapview, warning=FALSE, message=FALSE, echo = FALSE}
 ## plot the light radiance value in all years and all relevant counties simultaneously on one map (mapview function)
 
 #time span
@@ -784,7 +1145,7 @@ plot_years_counties_B(1992)
 
 > As shown above, the value of light radiance decreased in some counties/locations such as Destin & Anna Maria Island; the value of light radiance changed a little in some counties/locations such as GUlf COunty & Jacksonville beach; the value of light radiance increased in some counties/locations such as Bay County & Walton.
 
-```{r spatial analysis by using ggplot, echo = FALSE}
+```{r spatial analysis by using ggplot, warning=FALSE, message=FALSE, echo = FALSE}
 ## ## plot the light radiance value for different years one by one (ggplot function)
 t<-c(1992:2013)
 plot_years_counties_C <- function(y){
@@ -819,7 +1180,10 @@ Light_no_sf_2 <- select(Light_data_processed, County, Long:Lat)
 Light_no_sf_3<- Light_no_sf_2[!duplicated(Light_no_sf_2$County),]
 
 #combine data
-Light_group_no_sf <- merge(Light_group, Light_no_sf_3, by="County", all=TRUE)
+#Light_group_no_sf <- merge(Light_group, Light_no_sf_3, by="County", all=TRUE)
+#write.csv(Light_group_no_sf, "../Data/Light_group_no_sf.csv")
+
+Light_group_no_sf <- read.csv("../Data/Light_group_no_sf.csv")
 
 # sf transfer
 
@@ -887,15 +1251,12 @@ It may also be useful to compare to other locations around the U.S. or globally,
 
 
 ## Resources ##
-
 * [Florida Sea Turtle Protection Ordinances](https://myfwc.com/conservation/you-conserve/lighting/ordinances/)
 
 * [Other U.S. States with light pollution laws](https://www.ncsl.org/research/environment-and-natural-resources/states-shut-out-light-pollution.aspx)
 
-
-***
-
+**
 ## Appendix
+#```{r ref.label=knitr::all_lables(),echo=T, eval=F}
+#```
 
-```{r ref.label=knitr::all_labels(), echo = T, eval=FALSE}
-```
