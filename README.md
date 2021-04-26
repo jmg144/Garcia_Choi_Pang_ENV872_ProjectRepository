@@ -1,9 +1,7 @@
 # Garcia_Choi_Pang_ENV872_ProjectRepository
 Repository for final class project for Environmental Data Analytics (ENV 872). Group: Grace (Eun Hye) Choi, Qiaotong Pang, &amp; Jessica Garcia
 
-Sea Turtle Protection Policies & Light Pollution
-<Group Project for Environmental_Data_Analytics_2021 (Spring 2021)>
-<Created by Grace Choi, Qiaotong Pang, & Jess Garcia>
+Sea Turtle Protection Policies & Light Pollution (Spring 2021)
 
 <Data Source>
 The artificial light data were obtained from the Defense Meteorological Satellite Program (DMSP) Operational Linescan System (OLS). 
